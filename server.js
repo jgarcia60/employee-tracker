@@ -15,7 +15,7 @@ const questions = [
         type: 'list',
         message: 'What would you like to do?',
         name: 'option',
-        choices: ['Add department, role, or employee', 'View department, role, or employee', 'Update employee role', 'Update employee manager', 'View employees by manager', 'Delete department, role, or employee', 'View total utilized budget of a department']
+        choices: ['Add department, role, or employee', 'View department, role, or employee', 'Update employee role', 'Update employee manager', 'View employees by manager', 'Delete department, role, or employee', 'View total utilized budget of a department', 'Exit']
     }
 ]
 
@@ -51,6 +51,10 @@ init = () => {
             case "View total utilized budget of a department":
                 viewBudget();
                 break;
+            case "Exit":
+                console.log("You have exited the application");
+                connection.end();
+                break;
         }
 
         //if you want to view an employee, role, or department
@@ -68,26 +72,77 @@ init = () => {
     });
 };
 
-add = (input) => {
+const tableType = [
+    {
+        type: 'list',
+        message: 'Which object are you wanting to add?',
+        name: 'table',
+        choices: ['employee', 'role', 'department']
+    }
+]
+
+add = () => {
+    inquirer.prompt(tableType).then((res) => {
+        const query = res.table;
+    });
+    //make new input array for connection.query. Will need to create an inquirer prompt to get all input data (separated by commas)
+    connection.query("SELECT * FROM ?", [query], (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        // connection.end();
+    })
 
 }
 
 view = (input) => {
+    connection.query("SELECT * FROM ?", [input], (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        init();
+        // connection.end();
+    })
 
 }
 
 updateEmployee = (input) => {
+    connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
+        if (err) throw err;
+        console.table(res);
+        init();
+        // connection.end();
+    })
 
 }
 
 updateManager = (input) => {
 
+    connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
+        if (err) throw err;
+        console.table(res);
+        init();
+        // connection.end();
+    })
+
 }
 
 employeesByManager = () => {
 
+    connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
+        if (err) throw err;
+        console.table(res);
+        init();
+        // connection.end();
+    })
+
 }
 
 deleteEntry = () => {
+
+    connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
+        if (err) throw err;
+        console.table(res);
+        init();
+        // connection.end();
+    })
 
 }
