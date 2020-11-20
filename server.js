@@ -1,6 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const { inherits } = require('util');
+const { RSA_NO_PADDING } = require('constants');
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -82,8 +83,22 @@ const tableType = [
 ]
 
 add = () => {
-    inquirer.prompt(tableType).then((res) => {
+    inquirer.prompt(tableType).then((res) => { //add specific questions for each if block
+        let csv;
         const query = res.table;
+        if (res.table === 'employee') {
+            inquirer.prompt().then((res) => {
+                csv = res.str;
+            });
+        } else if (res.table === 'role') {
+            inquirer.prompt().then((res) => {
+                csv = res.str;
+            });
+        } else if (res.table === 'department') {
+            inquirer.prompt().then((res) => {
+                csv = res.str;
+            })
+        }
     });
     //make new input array for connection.query. Will need to create an inquirer prompt to get all input data (separated by commas)
     connection.query("SELECT * FROM ?", [query], (err, res) => {
