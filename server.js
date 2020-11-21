@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const { inherits } = require('util');
-const { RSA_NO_PADDING } = require('constants');
+// const { inherits } = require('util');
+// const { RSA_NO_PADDING } = require('constants');
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -24,7 +24,7 @@ connection.connect((err) => {
     if (err) throw err;
     console.log("connected as id" + connection.threadId);
     init();
-    connection.end(); //place this on the ending function call
+    // connection.end(); //place this on the ending function call
 })
 
 init = () => {
@@ -32,7 +32,9 @@ init = () => {
         //if you want to add an employee
         switch(res.option) {
             case "Add department, role, or employee":
-                add();
+                const testObj = {first_name: "Annika", last_name: "Garcia", role_id: 70, manager_id: 2}
+                // add();
+                queryAdd(testObj);
                 break;
             case "View department, role, or employee":
                 view();
@@ -82,20 +84,85 @@ const tableType = [
     }
 ]
 
+//INSERT INTO ...
+//employee(first, last, role manager)
+//role(title, salary, department)
+//department(department)
+const employeeQs = [
+    {
+        type: 'input',
+        message: "What is the employee's first name?",
+        name: 'first'
+    },
+    {
+        type: 'input',
+        message: "What is the employee's last name?",
+        name: 'last'
+    },
+    {
+        type: 'input',
+        message: "What is the employee's role ID?",
+        name: 'roleId'
+    },
+    {
+        type: 'input',
+        message: "What is the employee's manager's ID?",
+        name: 'managerId'
+    }
+];
+const roleQs = [
+    {
+        type: 'input',
+        message: "What is the employee's title?",
+        name : 'title'
+    },
+    {
+        type: 'input',
+        message: "What is the employee's salary?",
+        name: 'salary'
+    },
+    {
+        type: 'input',
+        message: "What is the employee's department?",
+        name: 'department'
+    }
+];
+const deptQs = [
+    {
+        type: 'input',
+        message: "What is the employee's department?",
+        name: 'department'
+    }
+];
+queryAdd = (object) => {
+    connection.query("INSERT INTO employee SET ?", object, (err, res) => { //might be outside scope of the connection, cannot see database
+        if (err) throw err;
+        console.log(res.affectedRows + "successfully added");
+        init();
+    });
+}
 add = () => {
     inquirer.prompt(tableType).then((res) => { //add specific questions for each if block
         let csv;
         const query = res.table;
         if (res.table === 'employee') {
-            inquirer.prompt().then((res) => {
-                csv = res.str;
+            inquirer.prompt(employeeQs).then((res) => {
+                const obj = {
+                    first_name: res.first,
+                    last_name: res.last,
+                    role_id: res.roleId,
+                    manager_id: res.managerId
+                }
+                queryAdd(obj);
+                // const arr = [res.first, res.last, res.roleId, res.managerId];
+                
             });
         } else if (res.table === 'role') {
-            inquirer.prompt().then((res) => {
+            inquirer.prompt(roleQs).then((res) => {
                 csv = res.str;
             });
         } else if (res.table === 'department') {
-            inquirer.prompt().then((res) => {
+            inquirer.prompt(deptQs).then((res) => {
                 csv = res.str;
             })
         }
