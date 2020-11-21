@@ -1,14 +1,13 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-// const { inherits } = require('util');
-// const { RSA_NO_PADDING } = require('constants');
+
 
 const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
     password: "Mickey19",
-    databse: "employees_db"
+    database: "employees_db"
 });
 
 const questions = [
@@ -23,18 +22,26 @@ const questions = [
 connection.connect((err) => {
     if (err) throw err;
     console.log("connected as id" + connection.threadId);
+    // afterConnection();
     init();
     // connection.end(); //place this on the ending function call
 })
 
+// afterConnection = () => {
+//     connection.query("SELECT * FROM employee", (err, res) => {
+//         if (err) throw err; 
+//         console.table(res);
+//         connection.end();
+//     })
+// }
 init = () => {
     inquirer.prompt(questions).then((res) => {
         //if you want to add an employee
         switch(res.option) {
             case "Add department, role, or employee":
-                const testObj = {first_name: "Annika", last_name: "Garcia", role_id: 70, manager_id: 2}
-                // add();
-                queryAdd(testObj);
+                // const testObj = {first_name: "Annika", last_name: "Garcia", role_id: 70, manager_id: 2}
+                add();
+                // queryAdd(testObj);
                 break;
             case "View department, role, or employee":
                 view();
@@ -168,11 +175,11 @@ add = () => {
         }
     });
     //make new input array for connection.query. Will need to create an inquirer prompt to get all input data (separated by commas)
-    connection.query("SELECT * FROM ?", [query], (err, res) => {
-        if (err) throw err;
-        console.table(res);
-        // connection.end();
-    })
+    // connection.query("SELECT * FROM ?", [query], (err, res) => {
+    //     if (err) throw err;
+    //     console.table(res);
+    //     // connection.end();
+    // })
 
 }
 
