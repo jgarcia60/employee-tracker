@@ -141,8 +141,8 @@ const deptQs = [
         name: 'department'
     }
 ];
-queryAdd = (object) => {
-    connection.query("INSERT INTO employee SET ?", object, (err, res) => { //might be outside scope of the connection, cannot see database
+queryAdd = (type, object) => {
+    connection.query("INSERT INTO " + type + " SET ?", object, (err, res) => { //might be outside scope of the connection, cannot see database
         if (err) throw err;
         console.log(res.affectedRows + "successfully added");
         init();
@@ -154,34 +154,35 @@ add = () => {
         const query = res.table;
         if (res.table === 'employee') {
             inquirer.prompt(employeeQs).then((res) => {
-                const obj = {
+                const newEmployee = {
                     first_name: res.first,
                     last_name: res.last,
                     role_id: res.roleId,
                     manager_id: res.managerId
                 }
-                queryAdd(obj);
+                queryAdd(query, newEmployee);
                 // const arr = [res.first, res.last, res.roleId, res.managerId];
                 
             });
         } else if (res.table === 'role') {
             inquirer.prompt(roleQs).then((res) => {
-                csv = res.str;
+                const newRole = {
+                    title: res.title,
+                    salary: res.salary,
+                    department_id: res.department
+                };
+                queryAdd(query, newRole);
             });
         } else if (res.table === 'department') {
             inquirer.prompt(deptQs).then((res) => {
-                csv = res.str;
+                const newDept = {
+                    name: res.department
+                };
+                queryAdd(query, newDept);
             })
         }
     });
-    //make new input array for connection.query. Will need to create an inquirer prompt to get all input data (separated by commas)
-    // connection.query("SELECT * FROM ?", [query], (err, res) => {
-    //     if (err) throw err;
-    //     console.table(res);
-    //     // connection.end();
-    // })
-
-}
+};
 
 view = (input) => {
     connection.query("SELECT * FROM ?", [input], (err, res) => {
