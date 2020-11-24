@@ -150,7 +150,7 @@ queryAdd = (type, object) => {
 }
 add = () => {
     inquirer.prompt(tableType).then((res) => { //add specific questions for each if block
-        let csv;
+        // let csv;
         const query = res.table;
         if (res.table === 'employee') {
             inquirer.prompt(employeeQs).then((res) => {
@@ -184,15 +184,34 @@ add = () => {
     });
 };
 
-view = (input) => {
-    connection.query("SELECT * FROM ?", [input], (err, res) => {
-        if (err) throw err;
+const viewQs = [
+    {
+        type: 'input',
+        message: 'Which employee would you like to view? (First and Last Name',
+        name: 'employeeName'
+    }
+];
+queryView = (first, last) => {
+    connection.query("SELECT * FROM employee JOIN role ON employee.role_id = role.id WHERE first_name = ? AND last_name = ?;", [first, last], (err, res) => {
+        if (err) throw err; 
         console.table(res);
         init();
-        // connection.end();
     })
-
 }
+view = () => {
+    inquirer.prompt(viewQs).then((res) => {
+        const temp = res.employeeName.split(" ");
+        const firstName = temp[0];
+        const lastName = temp[1];
+        queryView(firstName, lastName);
+    });
+    // connection.query("SELECT * FROM employee WHERE ? = ?", [table, column, value], (err, res) => {
+    //     if (err) throw err;
+    //     console.table(res);
+    //     init();
+    //     // connection.end();
+    // });
+};
 
 updateEmployee = (input) => {
     connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
