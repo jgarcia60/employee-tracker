@@ -213,7 +213,42 @@ view = () => {
     // });
 };
 
-updateEmployee = (input) => {
+queryUpdate = (first, last, column, value) => {
+    connection.query(
+        "UPDATE role SET ? = 
+    )
+    //mght need 2 queries. One to get the role_id from employee,
+    //one to update the role columns based on role_id
+};
+
+const updateQs = [
+    {
+        type: 'input',
+        message: "Whose data would you like to update? (first and last name)",
+        name: 'name',
+    },
+    {
+        type: 'list',
+        message: 'What would you like to update?',
+        name: 'column',
+        choices: ['Title', 'Salary']
+    },
+    {
+        type: 'input',
+        message: 'Enter your updated value:',
+        name: 'value'
+    }
+];
+updateEmployee = () => {
+    inquirer.prompt(updateQs).then((res) => {
+        const temp = res.name.split(" ");
+        const first = temp[0];
+        const last = temp[1];
+        const col = res.column;
+        const val = res.value;
+        
+        queryUpdate(first, last, col, val);
+    });
     connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
         if (err) throw err;
         console.table(res);
