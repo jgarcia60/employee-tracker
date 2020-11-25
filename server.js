@@ -214,10 +214,20 @@ view = () => {
 };
 
 queryUpdate = (first, last, column, value) => {
+    if (column === "Title" || column === "Salary") {
+        let table = "role";
+    } else {
+        let table = "employee";
+    }
+    column = column.toLowerCase();
     connection.query(
-        "UPDATE role SET ? = 
-    )
-    //mght need 2 queries. One to get the role_id from employee,
+        "UPDATE " + table + " JOIN role ON employee.role_id = role.id  SET ? = ? WHERE first_name = ? AND last_name = ?", [column, value, first, last], (err, res) => {
+            if (err) throw err;
+            console.log("You've updated " + first + " " + last);
+            console.table(res);
+        };
+    );
+    //might need 2 queries. One to get the role_id from employee,
     //one to update the role columns based on role_id
 };
 
@@ -231,7 +241,7 @@ const updateQs = [
         type: 'list',
         message: 'What would you like to update?',
         name: 'column',
-        choices: ['Title', 'Salary']
+        choices: ['Title', 'Salary', 'Role ID', 'Manager ID']
     },
     {
         type: 'input',
