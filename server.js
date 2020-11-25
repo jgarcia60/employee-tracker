@@ -225,8 +225,7 @@ queryUpdate = (first, last, column, value) => {
             if (err) throw err;
             console.log("You've updated " + first + " " + last);
             console.table(res);
-        };
-    );
+        });
     //might need 2 queries. One to get the role_id from employee,
     //one to update the role columns based on role_id
 };
@@ -299,4 +298,23 @@ deleteEntry = () => {
         // connection.end();
     })
 
+}
+
+budgetQs = [
+    {
+        type: 'input',
+        message: 'Which department are you interested in seeing the total utilized budget?',
+        name: 'dept'
+    }
+]
+viewBudget = () => { 
+    inquirer.prompt(budgetQs).then((res) => {
+
+        connection.query("SELECT SUM(salary) FROM role WHERE department = ?"), [res.dept], (err, rez) => {
+            if (err) throw err; 
+            console.table(rez);
+            init();
+        }
+    })
+    
 }
