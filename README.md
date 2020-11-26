@@ -25,7 +25,7 @@ To install the project files, you can clone the "employee-tracker" repository wh
 
 You may use this code to learn about using the Inquirer npm package to create a command line interface application, or as a tool to learn about using node.js, utilizing "CRUD" queries in MySQL, and more! Check out the video below on how this application works: 
 
-https://drive.google.com/file/d/18kHBLR7XUtoHKWpt_7HMxDP3UFUKhbRC/view
+https://drive.google.com/file/d/1RXC_5a5QSJzjbYwkdFVGf0ASPduMZ9nq/view
 
 This is what it looks like:
 ![screenshot](./employee-tracker.png)
