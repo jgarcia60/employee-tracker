@@ -239,32 +239,31 @@ view = () => {
 };
 
 queryUpdate = (first, last, column, value) => {
-    let table;
-    let join;
-    if (column === "Title" || column === "Salary") {
-        table = "role";
-        join = "employee"
-    } else {
-        table = "employee";
-        join = "role";
-    }
-    if (!column === "Title") {
+    // let table;
+    // let join;
+    // if (column === "Title" || column === "Salary") {
+    //     table = "role";
+    //     join = "employee"
+    // } else {
+    //     table = "employee";
+    //     join = "role";
+    // }
+    if (column !== "Title") {
         value = parseInt(value);
         column = column.toLowerCase();
-        connection.query(
-            "UPDATE " + table + " JOIN " + join + " ON role.id = employee.role_id SET ? = " + value + " WHERE first_name = ? AND last_name = ?;", [column, first, last], (err, res) => {
-                if (err) throw err;
-                console.log("You've updated " + first + " " + last);
-                console.table(res);
-            });
+        connection.query("UPDATE employee JOIN role ON employee.role_id = role.id SET ? = ? WHERE first_name = ? AND last_name = ?", [column, value, first, last], (err, res) => {
+            if (err) throw err;
+            console.log("You've updated " + first + " " + last);
+            console.table(res);
+            init();
+        });
     } else {
         column = column.toLowerCase();
-        connection.query(
-            "UPDATE " + table + " JOIN " + join + " ON role.id = employee.role_id SET ? = ? WHERE first_name = ? AND last_name = ?;", [column, value, first, last], (err, res) => {
-                if (err) throw err;
-                console.log("You've updated " + first + " " + last);
-                console.table(res);
-            });
+        connection.query("UPDATE employee JOIN role ON role.id = employee.role_id SET title = ? WHERE first_name = ? AND last_name = ?", [value, first, last], (err, res) => {
+            if (err) throw err;
+            console.log("You've updated " + first + " " + last);
+            console.table(res);
+        });
     }
     
     //might need 2 queries. One to get the role_id from employee,
@@ -281,7 +280,7 @@ const updateQs = [
         type: 'list',
         message: 'What would you like to update?',
         name: 'column',
-        choices: ['Title', 'Salary', 'Role ID', 'Manager ID']
+        choices: ['Title', 'Salary', 'Department ID']
     },
     {
         type: 'input',
@@ -299,14 +298,7 @@ updateEmployee = () => {
         
         queryUpdate(first, last, col, val);
     });
-    // connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
-    //     if (err) throw err;
-    //     console.table(res);
-    //     init();
-    //     // connection.end();
-    // })
-
-}
+};
 
 const updateManagerQs = [
     {
@@ -417,14 +409,18 @@ budgetQs = [
         name: 'dept'
     }
 ]
+
+queryBudget = (deptID) => {
+    connection.query("SELECT SUM(salary) FROM role WHERE department_id = ?", [deptID], (err, res) => {
+        if (err) throw err; 
+        console.table(res);
+        init();
+    });
+};
 viewBudget = () => { 
     inquirer.prompt(budgetQs).then((res) => {
-
-        connection.query("SELECT SUM(salary) FROM role WHERE department = ?"), [res.dept], (err, rez) => {
-            if (err) throw err; 
-            console.table(rez);
-            init();
-        }
+        const department_id = parseInt(res.dept);
+        queryBudget(department_id);
     })
     
 }
