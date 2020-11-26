@@ -174,12 +174,10 @@ queryAdd = (employee, role, department) => {
     connection.query("INSERT INTO employee SET ?", employee, (err, res) => { //might be outside scope of the connection, cannot see database
         if (err) throw err;
         console.log(res.affectedRows + "successfully added");
-        // init();
     });
     connection.query("INSERT INTO role SET ?", role, (err, res) => { //might be outside scope of the connection, cannot see database
         if (err) throw err;
         console.log(res.affectedRows + "successfully added");
-        // init();
     });
     connection.query("INSERT INTO department SET ?", department, (err, res) => { //might be outside scope of the connection, cannot see database
         if (err) throw err;
@@ -208,37 +206,6 @@ add = () => {
             name: res.department
         };
         queryAdd(newEmployee, newRole, newDept);
-        // queryAdd("role", newRole);
-        // queryAdd("department", newDept);
-        // if (res.table === 'employee') {
-        //     inquirer.prompt(employeeQs).then((res) => {
-        //         const newEmployee = {
-        //             first_name: res.first,
-        //             last_name: res.last,
-        //             role_id: res.roleId,
-        //             manager_id: res.managerId
-        //         }
-        //         queryAdd(query, newEmployee);
-        //         // const arr = [res.first, res.last, res.roleId, res.managerId];
-                
-        //     });
-        // } else if (res.table === 'role') {
-        //     inquirer.prompt(roleQs).then((res) => {
-        //         const newRole = {
-        //             title: res.title,
-        //             salary: res.salary,
-        //             department_id: res.department
-        //         };
-        //         queryAdd(query, newRole);
-        //     });
-        // } else if (res.table === 'department') {
-        //     inquirer.prompt(deptQs).then((res) => {
-        //         const newDept = {
-        //             name: res.department
-        //         };
-        //         queryAdd(query, newDept);
-        //     })
-        // }
     });
 };
 
@@ -272,18 +239,34 @@ view = () => {
 };
 
 queryUpdate = (first, last, column, value) => {
+    let table;
+    let join;
     if (column === "Title" || column === "Salary") {
-        let table = "role";
+        table = "role";
+        join = "employee"
     } else {
-        let table = "employee";
+        table = "employee";
+        join = "role";
     }
-    column = column.toLowerCase();
-    connection.query(
-        "UPDATE " + table + " JOIN role ON employee.role_id = role.id  SET ? = ? WHERE first_name = ? AND last_name = ?", [column, value, first, last], (err, res) => {
-            if (err) throw err;
-            console.log("You've updated " + first + " " + last);
-            console.table(res);
-        });
+    if (!column === "Title") {
+        value = parseInt(value);
+        column = column.toLowerCase();
+        connection.query(
+            "UPDATE " + table + " JOIN " + join + " ON role.id = employee.role_id SET ? = " + value + " WHERE first_name = ? AND last_name = ?;", [column, first, last], (err, res) => {
+                if (err) throw err;
+                console.log("You've updated " + first + " " + last);
+                console.table(res);
+            });
+    } else {
+        column = column.toLowerCase();
+        connection.query(
+            "UPDATE " + table + " JOIN " + join + " ON role.id = employee.role_id SET ? = ? WHERE first_name = ? AND last_name = ?;", [column, value, first, last], (err, res) => {
+                if (err) throw err;
+                console.log("You've updated " + first + " " + last);
+                console.table(res);
+            });
+    }
+    
     //might need 2 queries. One to get the role_id from employee,
     //one to update the role columns based on role_id
 };
@@ -316,22 +299,56 @@ updateEmployee = () => {
         
         queryUpdate(first, last, col, val);
     });
-    connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
-        if (err) throw err;
-        console.table(res);
-        init();
-        // connection.end();
-    })
+    // connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
+    //     if (err) throw err;
+    //     console.table(res);
+    //     init();
+    //     // connection.end();
+    // })
 
 }
 
-updateManager = (input) => {
+const updateManagerQs = [
+    {
+        type: 'input',
+        message: 'Whose manager do you want to update?',
+        name: 'name'
+    },
+    {
+        type: 'input',
+        message: "Who is the employees new manager?",
+        name: 'newManager'
+    }
+];
 
-    connection.query("SELECT * FROM ?", [input], (err, res) => { //change query call
+queryUpdateManager = (first, last, newManager) => {
+    const temp = newManager.split(" ");
+    const newManagerFirst = temp[0];
+    const newManagerLast = temp[1];
+    connection.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?", [newManagerFirst, newManagerLast], (err, res) => {
         if (err) throw err;
-        console.table(res);
-        init();
-        // connection.end();
+        console.log(res);
+        console.log(res[0].role_id);
+        console.log(res[0].manager_id);
+        const manager_id = res[0].role_id;
+        // console.log(manager_id);
+        connection.query("UPDATE employee SET manager_id = " + manager_id + " WHERE first_name = ? AND last_name = ?", [first, last], (err, rez) => {
+            if (err) throw err;
+            console.log(rez.changedRows + " has been changed");
+            init();
+        });
+        // console.log(res);
+        // console.log(newManager);
+    });
+    
+}
+updateManager = (input) => {
+    inquirer.prompt(updateManagerQs).then((res) => {
+        const temp = res.name.split(" ");
+        const first = temp[0];
+        const last = temp[1];
+        const newManager = res.newManager;
+        queryUpdateManager(first, last, newManager);
     })
 
 }
@@ -367,12 +384,21 @@ const deleteQs = [
 ];
 
 queryDelete = (first, last) => {
-    connection.query("DELETE * FROM employee WHERE first_name = ? AND last_name = ?", [first, last], (err, res) => {
+    connection.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?", [first, last], (err, res) => {
+        if (err) throw err;
+        const role_id = res[0].role_id;
+        connection.query("DELETE FROM role WHERE role.id = ?", [role_id], (err, rez) => {
+            if (err) throw err;
+            console.log(rez.affectedRows + " has been deleted!");
+        });
+    }); 
+    connection.query("DELETE FROM employee WHERE first_name = ? AND last_name = ?", [first, last], (err, res) => {
         if (err) throw err;
         console.log(res.affectedRows + " was deleted!");
-    });
-    init();
+        init();
+    }); 
 };
+
 deleteEntry = () => {
     inquirer.prompt(deleteQs).then((res) => {
         const name = res.name;
@@ -381,15 +407,8 @@ deleteEntry = () => {
         const first = temp[0];
         const last = temp[1];
         queryDelete(first, last);
-    })
-    connection.query("DELETE * FROM ?", [input], (err, res) => { //change query call
-        if (err) throw err;
-        console.table(res);
-        init();
-        // connection.end();
-    })
-
-}
+    });
+};
 
 budgetQs = [
     {
